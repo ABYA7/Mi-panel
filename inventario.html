@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Inventario">
+<title>Inventario</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background-color: #0d1117;
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    color: #e7e5df;
+  }
+  body { padding-bottom: 90px; }
+
+  .topbar {
+    background-color: #131923;
+    border-bottom: 1px solid #232a36;
+    padding: 14px 16px 16px 16px;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+  }
+  a.volver { display: inline-block; color: #5c6472; font-size: 12px; text-decoration: none; margin-bottom: 8px; }
+  h1 { font-size: 21px; font-weight: 700; margin-bottom: 12px; }
+
+  .stats {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    margin-bottom: 12px;
+  }
+  .stat {
+    -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+    background-color: #1a212c;
+    border: 1px solid #232a36;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-right: 8px;
+  }
+  .stat:last-child { margin-right: 0; }
+  .stat .valor { font-size: 19px; font-weight: 700; color: #e7e5df; }
+  .stat.destaca .valor { color: #06B6D4; }
+  .stat .etiqueta { font-size: 10px; color: #5c6472; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  input.buscar {
+    width: 100%;
+    background-color: #1a212c;
+    border: 1px solid #232a36;
+    border-radius: 10px;
+    color: #e7e5df;
+    padding: 11px 12px;
+    font-size: 14px;
+  }
+
+  #lista { padding: 14px 16px; }
+
+  .item {
+    background-color: #1a212c;
+    border: 1px solid #232a36;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .item-cabecera {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-align-items: center; align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #232a36;
+  }
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background-color: #06B6D4;
+    color: #0b1220;
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+    line-height: 34px;
+    margin-right: 10px;
+    -webkit-flex-shrink: 0;
+    flex-shrink: 0;
+  }
+  input.nombre-producto {
+    -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+    background: none;
+    border: none;
+    color: #e7e5df;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 4px;
+  }
+  a.borrar {
+    color: #5c6472;
+    font-size: 18px;
+    padding-left: 10px;
+  }
+
+  .item-cuerpo {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    padding: 10px 12px;
+  }
+  .campo-mini {
+    -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+    margin-right: 8px;
+  }
+  .campo-mini:last-child { margin-right: 0; }
+  .campo-mini label {
+    display: block;
+    font-size: 9px;
+    color: #5c6472;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
+  }
+  .campo-mini input {
+    width: 100%;
+    background-color: #0d1117;
+    border: 1px solid #232a36;
+    border-radius: 8px;
+    color: #e7e5df;
+    padding: 7px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .campo-mini .valor-fijo {
+    color: #06B6D4;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 7px 0;
+    text-align: center;
+  }
+
+  .badge-bajo {
+    background-color: #3a1d1d;
+    color: #f19a9a;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-top: 1px solid #232a36;
+  }
+
+  .vacio {
+    text-align: center;
+    color: #5c6472;
+    font-size: 13px;
+    padding: 40px 20px;
+  }
+
+  .fab {
+    position: fixed;
+    right: 20px;
+    bottom: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background-color: #06B6D4;
+    color: #0b1220;
+    font-size: 28px;
+    font-weight: 700;
+    border: none;
+    line-height: 56px;
+    text-align: center;
+    -webkit-box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="volver" href="index.html">&larr; Volver al panel</a>
+    <h1>Inventario</h1>
+    <div class="stats">
+      <div class="stat">
+        <div class="valor" id="stat-productos">0</div>
+        <div class="etiqueta">Productos</div>
+      </div>
+      <div class="stat destaca">
+        <div class="valor" id="stat-total">$0</div>
+        <div class="etiqueta">Valor total</div>
+      </div>
+    </div>
+    <input class="buscar" id="buscador" placeholder="Buscar producto..." oninput="dibujar()">
+  </div>
+
+  <div id="lista"></div>
+
+  <button class="fab" onclick="agregarProducto()">+</button>
+
+<script>
+  var productos = [];
+  var UMBRAL_BAJO = 5;
+
+  function formatoDinero(n) {
+    n = Math.round(n);
+    var neg = n < 0;
+    if (neg) { n = -n; }
+    var s = String(n);
+    var out = '';
+    var count = 0;
+    var i;
+    for (i = s.length - 1; i >= 0; i = i - 1) {
+      out = s.charAt(i) + out;
+      count = count + 1;
+      if (count % 3 === 0 && i !== 0) { out = '.' + out; }
+    }
+    return (neg ? '-$' : '$') + out;
+  }
+
+  function cargar() {
+    try {
+      var val = localStorage.getItem('inventario_datos');
+      if (val) {
+        var datos = JSON.parse(val);
+        var i;
+        for (i = 0; i < datos.length; i = i + 1) {
+          productos.push({
+            nombre: datos[i].p || '',
+            cantidad: datos[i].c || '0',
+            precio: datos[i].pr || '0'
+          });
+        }
+      }
+    } catch (e) {}
+    dibujar();
+  }
+
+  function guardar() {
+    try {
+      var datos = [];
+      var i;
+      for (i = 0; i < productos.length; i = i + 1) {
+        datos.push({ p: productos[i].nombre, c: productos[i].cantidad, pr: productos[i].precio });
+      }
+      localStorage.setItem('inventario_datos', JSON.stringify(datos));
+    } catch (e) {}
+  }
+
+  function agregarProducto() {
+    productos.push({ nombre: '', cantidad: '0', precio: '0' });
+    guardar();
+    dibujar();
+  }
+
+  function quitarProducto(i) {
+    if (!confirm('Quitar "' + (productos[i].nombre || 'este producto') + '" del inventario?')) { return; }
+    productos.splice(i, 1);
+    guardar();
+    dibujar();
+  }
+
+  function actualizarCampo(i, campo, valor) {
+    productos[i][campo] = valor;
+    guardar();
+    if (campo === 'nombre') {
+      var av = document.getElementById('avatar-' + i);
+      if (av) { av.innerHTML = inicial(valor); }
+    } else {
+      var cant = parseFloat(productos[i].cantidad) || 0;
+      var precio = parseFloat(productos[i].precio) || 0;
+      var valorFijo = document.getElementById('valorfijo-' + i);
+      if (valorFijo) { valorFijo.innerHTML = formatoDinero(cant * precio); }
+      var badge = document.getElementById('badge-' + i);
+      if (badge) { badge.style.display = (cant <= UMBRAL_BAJO) ? 'block' : 'none'; }
+    }
+    actualizarStats();
+  }
+
+  function inicial(nombre) {
+    if (!nombre || nombre.length === 0) { return '?'; }
+    return nombre.charAt(0).toUpperCase();
+  }
+
+  function actualizarStats() {
+    var total = 0;
+    var i;
+    for (i = 0; i < productos.length; i = i + 1) {
+      var c = parseFloat(productos[i].cantidad) || 0;
+      var p = parseFloat(productos[i].precio) || 0;
+      total = total + (c * p);
+    }
+    document.getElementById('stat-productos').innerHTML = productos.length;
+    document.getElementById('stat-total').innerHTML = formatoDinero(total);
+  }
+
+  function dibujar() {
+    var filtro = document.getElementById('buscador').value.toLowerCase();
+    var cont = document.getElementById('lista');
+    var html = '';
+    var mostrados = 0;
+    var i;
+    for (i = 0; i < productos.length; i = i + 1) {
+      var nombre = productos[i].nombre || '';
+      if (filtro && nombre.toLowerCase().indexOf(filtro) === -1) { continue; }
+      mostrados = mostrados + 1;
+      var cant = parseFloat(productos[i].cantidad) || 0;
+      var precio = parseFloat(productos[i].precio) || 0;
+      var valor = cant * precio;
+      var bajo = cant <= UMBRAL_BAJO;
+
+      html = html + '<div class="item">' +
+        '<div class="item-cabecera">' +
+          '<div class="avatar" id="avatar-' + i + '">' + inicial(nombre) + '</div>' +
+          '<input class="nombre-producto" placeholder="Nombre del producto" value="' + nombre.replace(/"/g, '&quot;') + '" oninput="actualizarCampo(' + i + ',\'nombre\',this.value)">' +
+          '<a class="borrar" onclick="quitarProducto(' + i + ')">&#128465;</a>' +
+        '</div>' +
+        '<div class="item-cuerpo">' +
+          '<div class="campo-mini"><label>Cantidad</label><input type="number" value="' + productos[i].cantidad + '" oninput="actualizarCampo(' + i + ',\'cantidad\',this.value)"></div>' +
+          '<div class="campo-mini"><label>Precio</label><input type="number" value="' + productos[i].precio + '" oninput="actualizarCampo(' + i + ',\'precio\',this.value)"></div>' +
+          '<div class="campo-mini"><label>Valor</label><div class="valor-fijo" id="valorfijo-' + i + '">' + formatoDinero(valor) + '</div></div>' +
+        '</div>' +
+        '<div class="badge-bajo" id="badge-' + i + '" style="display:' + (bajo ? 'block' : 'none') + ';">&#9888; Bajo stock</div>' +
+        '</div>';
+    }
+    if (productos.length === 0) {
+      html = '<div class="vacio">A&uacute;n no hay productos.<br>Toca el bot&oacute;n + para agregar el primero.</div>';
+    } else if (mostrados === 0) {
+      html = '<div class="vacio">No hay productos que coincidan con "' + filtro + '".</div>';
+    }
+    cont.innerHTML = html;
+    actualizarStats();
+  }
+
+  cargar();
+</script>
+
+</body>
+</html>
