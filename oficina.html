@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Oficina">
+<title>Oficina Offline</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background-color: #12151c;
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    color: #e7e5df;
+  }
+  body { padding: 16px; padding-bottom: 60px; }
+
+  a.volver {
+    display: inline-block;
+    color: #7d8493;
+    font-size: 13px;
+    text-decoration: none;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  p.sub {
+    color: #7d8493;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .tabs {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #2a2f3a;
+  }
+  .tab-btn {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    background: none;
+    border: none;
+    color: #7d8493;
+    padding: 10px 4px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+  }
+  .tab-btn.activa {
+    color: #f4f1ea;
+    border-bottom: 3px solid #F0A500;
+  }
+
+  .panel { display: none; }
+  .panel.activa { display: block; }
+
+  #documento {
+    background-color: #1c2029;
+    border: 1px solid #2a2f3a;
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 320px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #e7e5df;
+    -webkit-user-select: text;
+  }
+
+  .barra {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    -webkit-align-items: center;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .estado {
+    font-size: 11px;
+    color: #4d5361;
+  }
+  .btn {
+    display: inline-block;
+    background-color: #262b36;
+    color: #e7e5df;
+    border: 1px solid #2a2f3a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .tabla-envoltorio {
+    overflow-x: auto;
+    border: 1px solid #2a2f3a;
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  table.hoja {
+    border-collapse: collapse;
+    background-color: #1c2029;
+  }
+  table.hoja th, table.hoja td {
+    border: 1px solid #2a2f3a;
+    min-width: 74px;
+    height: 34px;
+    text-align: center;
+    font-size: 13px;
+    padding: 4px;
+  }
+  table.hoja th {
+    background-color: #20242e;
+    color: #7d8493;
+    font-weight: 600;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+  }
+  table.hoja th.esquina { min-width: 34px; }
+  table.hoja td.celda {
+    color: #e7e5df;
+  }
+  table.hoja td.total {
+    color: #F0A500;
+    font-weight: 700;
+    background-color: #20242e;
+  }
+
+  .ayuda {
+    margin-top: 14px;
+    font-size: 12px;
+    color: #7d8493;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+  <a class="volver" href="index.html">&larr; Volver al panel</a>
+  <h1>Oficina Offline</h1>
+  <p class="sub">Documento y hoja de c&aacute;lculo, sin necesidad de internet. Se guarda solo en este iPad.</p>
+
+  <div class="tabs">
+    <button class="tab-btn activa" id="btn-doc" onclick="mostrarTab('doc')">Documento</button>
+    <button class="tab-btn" id="btn-hoja" onclick="mostrarTab('hoja')">Hoja de c&aacute;lculo</button>
+  </div>
+
+  <div class="panel activa" id="tab-doc">
+    <div class="barra">
+      <span class="estado" id="estado-doc">Guardado</span>
+      <button class="btn" onclick="borrarDoc()">Borrar documento</button>
+    </div>
+    <div id="documento" contenteditable="true" oninput="guardarDoc()"></div>
+    <p class="ayuda">Para copiar el texto: manten&eacute;n el dedo sobre el texto, toca "Seleccionar todo" y luego "Copiar". Despu&eacute;s puedes pegarlo en Notas, correo o WhatsApp desde tu celular.</p>
+  </div>
+
+  <div class="panel" id="tab-hoja">
+    <div class="barra">
+      <span class="estado" id="estado-hoja">Guardado</span>
+      <button class="btn" onclick="borrarHoja()">Borrar hoja</button>
+    </div>
+    <div class="tabla-envoltorio">
+      <table class="hoja" id="tabla-hoja"></table>
+    </div>
+    <p class="ayuda">Escribe n&uacute;meros en las celdas de cada fila; la columna Total suma autom&aacute;ticamente. Toca una celda para editarla.</p>
+  </div>
+
+<script>
+  var COLS = 6;
+  var ROWS = 12;
+
+  function mostrarTab(nombre) {
+    document.getElementById('tab-doc').className = 'panel' + (nombre === 'doc' ? ' activa' : '');
+    document.getElementById('tab-hoja').className = 'panel' + (nombre === 'hoja' ? ' activa' : '');
+    document.getElementById('btn-doc').className = 'tab-btn' + (nombre === 'doc' ? ' activa' : '');
+    document.getElementById('btn-hoja').className = 'tab-btn' + (nombre === 'hoja' ? ' activa' : '');
+  }
+
+  function guardarDoc() {
+    try {
+      localStorage.setItem('oficina_doc', document.getElementById('documento').innerHTML);
+      document.getElementById('estado-doc').innerHTML = 'Guardado';
+    } catch (e) {
+      document.getElementById('estado-doc').innerHTML = 'No se pudo guardar';
+    }
+  }
+
+  function cargarDoc() {
+    try {
+      var val = localStorage.getItem('oficina_doc');
+      if (val) { document.getElementById('documento').innerHTML = val; }
+    } catch (e) {}
+  }
+
+  function borrarDoc() {
+    if (confirm('Esto borra todo el documento. Continuar?')) {
+      document.getElementById('documento').innerHTML = '';
+      guardarDoc();
+    }
+  }
+
+  function letraColumna(i) {
+    return String.fromCharCode(65 + i);
+  }
+
+  function construirTabla() {
+    var tabla = document.getElementById('tabla-hoja');
+    var html = '<tr><th class="esquina"></th>';
+    var c;
+    for (c = 0; c < COLS; c = c + 1) {
+      html = html + '<th>' + letraColumna(c) + '</th>';
+    }
+    html = html + '<th>Total</th></tr>';
+
+    var r;
+    for (r = 0; r < ROWS; r = r + 1) {
+      html = html + '<tr><th>' + (r + 1) + '</th>';
+      for (c = 0; c < COLS; c = c + 1) {
+        html = html + '<td class="celda" contenteditable="true" data-r="' + r + '" data-c="' + c + '" onkeyup="actualizarFila(' + r + ')" onblur="actualizarFila(' + r + ')"></td>';
+      }
+      html = html + '<td class="total" id="total-' + r + '">0</td></tr>';
+    }
+    tabla.innerHTML = html;
+  }
+
+  function actualizarFila(r) {
+    var suma = 0;
+    var c;
+    for (c = 0; c < COLS; c = c + 1) {
+      var celda = document.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+      if (celda) {
+        var val = parseFloat(celda.innerText.replace(',', '.'));
+        if (!isNaN(val)) { suma = suma + val; }
+      }
+    }
+    document.getElementById('total-' + r).innerHTML = suma;
+    guardarHoja();
+  }
+
+  function guardarHoja() {
+    try {
+      var datos = [];
+      var r, c;
+      for (r = 0; r < ROWS; r = r + 1) {
+        var fila = [];
+        for (c = 0; c < COLS; c = c + 1) {
+          var celda = document.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+          fila.push(celda ? celda.innerText : '');
+        }
+        datos.push(fila);
+      }
+      localStorage.setItem('oficina_hoja', JSON.stringify(datos));
+      document.getElementById('estado-hoja').innerHTML = 'Guardado';
+    } catch (e) {
+      document.getElementById('estado-hoja').innerHTML = 'No se pudo guardar';
+    }
+  }
+
+  function cargarHoja() {
+    try {
+      var val = localStorage.getItem('oficina_hoja');
+      if (!val) { return; }
+      var datos = JSON.parse(val);
+      var r, c;
+      for (r = 0; r < datos.length && r < ROWS; r = r + 1) {
+        for (c = 0; c < datos[r].length && c < COLS; c = c + 1) {
+          var celda = document.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+          if (celda) { celda.innerText = datos[r][c]; }
+        }
+        actualizarFila(r);
+      }
+    } catch (e) {}
+  }
+
+  function borrarHoja() {
+    if (confirm('Esto borra toda la hoja. Continuar?')) {
+      localStorage.removeItem('oficina_hoja');
+      construirTabla();
+    }
+  }
+
+  construirTabla();
+  cargarDoc();
+  cargarHoja();
+</script>
+
+</body>
+</html>
