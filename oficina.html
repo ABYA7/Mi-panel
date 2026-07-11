@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Oficina">
+<title>Oficina Offline</title>
+<style>
+  * { -webkit-box-sizing: border-box; box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background-color: #12151c;
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    color: #e7e5df;
+  }
+  body { padding: 16px; padding-bottom: 60px; }
+
+  a.volver {
+    display: inline-block;
+    color: #7d8493;
+    font-size: 13px;
+    text-decoration: none;
+    margin-bottom: 14px;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  p.sub { color: #7d8493; font-size: 12px; margin-bottom: 16px; }
+
+  .tabs {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #2a2f3a;
+  }
+  .tab-btn {
+    -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+    background: none; border: none; color: #7d8493;
+    padding: 10px 4px; font-size: 14px; font-weight: 600;
+    border-bottom: 3px solid transparent;
+  }
+  .tab-btn.activa { color: #f4f1ea; border-bottom: 3px solid #F0A500; }
+  .panel { display: none; }
+  .panel.activa { display: block; }
+
+  select.selector {
+    width: 100%;
+    background-color: #1c2029;
+    color: #e7e5df;
+    border: 1px solid #2a2f3a;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .barra {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-flex-wrap: wrap; flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .btn {
+    display: inline-block;
+    background-color: #262b36;
+    color: #e7e5df;
+    border: 1px solid #2a2f3a;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 12px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+  .btn.destaca { background-color: #F0A500; color: #1c1c1c; border: none; font-weight: 700; }
+  .btn b { pointer-events: none; }
+  .btn u { pointer-events: none; }
+
+  .estado { font-size: 11px; color: #4d5361; margin-bottom: 8px; display: block; }
+
+  #documento {
+    background-color: #1c2029;
+    border: 1px solid #2a2f3a;
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 300px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #e7e5df;
+    -webkit-user-select: text;
+  }
+  #documento h2 { font-size: 19px; margin: 4px 0; color: #F0A500; }
+
+  .tabla-envoltorio {
+    overflow-x: auto;
+    border: 1px solid #2a2f3a;
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  table.hoja { border-collapse: collapse; background-color: #1c2029; }
+  table.hoja th, table.hoja td {
+    border: 1px solid #2a2f3a;
+    min-width: 74px; height: 34px;
+    text-align: center; font-size: 13px; padding: 4px;
+  }
+  table.hoja th {
+    background-color: #20242e; color: #7d8493; font-weight: 600;
+  }
+  table.hoja th.esquina { min-width: 34px; }
+  table.hoja td.celda { color: #e7e5df; }
+  table.hoja td.total { color: #F0A500; font-weight: 700; background-color: #20242e; }
+  table.hoja tr.fila-total th, table.hoja tr.fila-total td {
+    background-color: #20242e; color: #F0A500; font-weight: 700;
+  }
+
+  .ayuda { margin-top: 14px; font-size: 12px; color: #7d8493; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+  <a class="volver" href="index.html">&larr; Volver al panel</a>
+  <h1>Oficina Offline</h1>
+  <p class="sub">Documentos y hoja de c&aacute;lculo, sin internet. Todo se guarda en este iPad.</p>
+
+  <div class="tabs">
+    <button class="tab-btn activa" id="btn-doc" onclick="mostrarTab('doc')">Documentos</button>
+    <button class="tab-btn" id="btn-hoja" onclick="mostrarTab('hoja')">Hoja de c&aacute;lculo</button>
+  </div>
+
+  <div class="panel activa" id="tab-doc">
+    <select class="selector" id="lista-docs" onchange="cambiarDoc()"></select>
+
+    <div class="barra">
+      <button class="btn destaca" onclick="nuevoDoc()">+ Nuevo</button>
+      <button class="btn" onclick="guardarDoc(true)">Guardar</button>
+      <button class="btn" onclick="eliminarDoc()">Eliminar este</button>
+    </div>
+    <div class="barra">
+      <button class="btn" onclick="document.execCommand('bold')"><b>Negrita</b></button>
+      <button class="btn" onclick="document.execCommand('underline')"><u>Subrayado</u></button>
+      <button class="btn" onclick="document.execCommand('formatBlock', false, 'H2')">T&iacute;tulo</button>
+      <button class="btn" onclick="document.execCommand('formatBlock', false, 'P')">Texto normal</button>
+    </div>
+
+    <span class="estado" id="estado-doc">Guardado</span>
+    <div id="documento" contenteditable="true" oninput="guardarDoc(false)"></div>
+    <p class="ayuda">Cada tema es un documento separado. Usa "+ Nuevo" para crear otro tema sin borrar el actual. Para copiar el texto: manten&eacute;n el dedo sobre &eacute;l, toca "Seleccionar todo" y luego "Copiar".</p>
+  </div>
+
+  <div class="panel" id="tab-hoja">
+    <div class="barra">
+      <button class="btn" onclick="borrarHoja()">Borrar hoja</button>
+    </div>
+    <span class="estado" id="estado-hoja">Guardado</span>
+    <div class="tabla-envoltorio">
+      <table class="hoja" id="tabla-hoja"></table>
+    </div>
+    <p class="ayuda"><b>C&oacute;mo funciona:</b> escribe n&uacute;meros en cualquier celda. La columna de la derecha ("Total") suma autom&aacute;ticamente esa fila. La &uacute;ltima fila de abajo suma cada columna completa. No hace falta escribir f&oacute;rmulas, solo n&uacute;meros.</p>
+  </div>
+
+<script>
+  var COLS = 6;
+  var ROWS = 12;
+
+  function mostrarTab(nombre) {
+    document.getElementById('tab-doc').className = 'panel' + (nombre === 'doc' ? ' activa' : '');
+    document.getElementById('tab-hoja').className = 'panel' + (nombre === 'hoja' ? ' activa' : '');
+    document.getElementById('btn-doc').className = 'tab-btn' + (nombre === 'doc' ? ' activa' : '');
+    document.getElementById('btn-hoja').className = 'tab-btn' + (nombre === 'hoja' ? ' activa' : '');
+  }
+
+  /* ---------- DOCUMENTOS (varios temas) ---------- */
+  var docs = {};
+  var docActual = '';
+
+  function cargarDocs() {
+    try {
+      var val = localStorage.getItem('oficina_docs');
+      docs = val ? JSON.parse(val) : {};
+    } catch (e) { docs = {}; }
+    var nombres = [];
+    for (var n in docs) { if (docs.hasOwnProperty(n)) { nombres.push(n); } }
+    if (nombres.length === 0) {
+      docs['Tema 1'] = '';
+      nombres.push('Tema 1');
+    }
+    llenarLista(nombres);
+    docActual = nombres[0];
+    document.getElementById('lista-docs').value = docActual;
+    document.getElementById('documento').innerHTML = docs[docActual];
+  }
+
+  function llenarLista(nombres) {
+    var sel = document.getElementById('lista-docs');
+    var html = '';
+    for (var i = 0; i < nombres.length; i = i + 1) {
+      html = html + '<option value="' + nombres[i] + '">' + nombres[i] + '</option>';
+    }
+    sel.innerHTML = html;
+  }
+
+  function cambiarDoc() {
+    guardarDoc(false);
+    docActual = document.getElementById('lista-docs').value;
+    document.getElementById('documento').innerHTML = docs[docActual] || '';
+  }
+
+  function nuevoDoc() {
+    var nombre = prompt('Nombre del nuevo tema (ej: Clientes, Ideas, Notas):');
+    if (!nombre) { return; }
+    if (docs[nombre] !== undefined) { alert('Ya existe un tema con ese nombre.'); return; }
+    docs[nombre] = '';
+    guardarTodosLosDocs();
+    var nombres = [];
+    for (var n in docs) { if (docs.hasOwnProperty(n)) { nombres.push(n); } }
+    llenarLista(nombres);
+    document.getElementById('lista-docs').value = nombre;
+    docActual = nombre;
+    document.getElementById('documento').innerHTML = '';
+  }
+
+  function eliminarDoc() {
+    if (!confirm('Eliminar el tema "' + docActual + '"? Esto no se puede deshacer.')) { return; }
+    delete docs[docActual];
+    var nombres = [];
+    for (var n in docs) { if (docs.hasOwnProperty(n)) { nombres.push(n); } }
+    if (nombres.length === 0) { docs['Tema 1'] = ''; nombres.push('Tema 1'); }
+    guardarTodosLosDocs();
+    llenarLista(nombres);
+    docActual = nombres[0];
+    document.getElementById('lista-docs').value = docActual;
+    document.getElementById('documento').innerHTML = docs[docActual];
+  }
+
+  function guardarDoc(mostrarAlerta) {
+    docs[docActual] = document.getElementById('documento').innerHTML;
+    guardarTodosLosDocs();
+    if (mostrarAlerta) {
+      document.getElementById('estado-doc').innerHTML = 'Guardado \u2713';
+    } else {
+      document.getElementById('estado-doc').innerHTML = 'Guardado';
+    }
+  }
+
+  function guardarTodosLosDocs() {
+    try {
+      localStorage.setItem('oficina_docs', JSON.stringify(docs));
+    } catch (e) {
+      document.getElementById('estado-doc').innerHTML = 'No se pudo guardar';
+    }
+  }
+
+  /* ---------- HOJA DE CALCULO ---------- */
+  function letraColumna(i) { return String.fromCharCode(65 + i); }
+
+  function construirTabla() {
+    var tabla = document.getElementById('tabla-hoja');
+    var html = '<tr><th class="esquina"></th>';
+    var c;
+    for (c = 0; c < COLS; c = c + 1) { html = html + '<th>' + letraColumna(c) + '</th>'; }
+    html = html + '<th>Total fila</th></tr>';
+
+    var r;
+    for (r = 0; r < ROWS; r = r + 1) {
+      html = html + '<tr><th>' + (r + 1) + '</th>';
+      for (c = 0; c < COLS; c = c + 1) {
+        html = html + '<td class="celda" contenteditable="true" data-r="' + r + '" data-c="' + c + '" onkeyup="actualizarTodo()" onblur="actualizarTodo()"></td>';
+      }
+      html = html + '<td class="total" id="total-' + r + '">0</td></tr>';
+    }
+
+    html = html + '<tr class="fila-total"><th>Total col.</th>';
+    for (c = 0; c < COLS; c = c + 1) { html = html + '<td id="totalcol-' + c + '">0</td>'; }
+    html = html + '<td id="totalgeneral">0</td></tr>';
+
+    tabla.innerHTML = html;
+  }
+
+  function actualizarTodo() {
+    var r, c;
+    var totalGeneral = 0;
+    for (r = 0; r < ROWS; r = r + 1) {
+      var sumaFila = 0;
+      for (c = 0; c < COLS; c = c + 1) {
+        var celda = document.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+        var val = celda ? parseFloat(celda.innerText.replace(',', '.')) : NaN;
+        if (!isNaN(val)) { sumaFila = sumaFila + val; }
+      }
+      document.getElementById('total-' + r).innerHTML = sumaFila;
+      totalGeneral = totalGeneral + sumaFila;
+    }
+    for (c = 0; c < COLS; c = c + 1) {
+      var sumaCol = 0;
+      for (r = 0; r < ROWS; r = r + 1) {
+        var celda2 = document.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+        var val2 = celda2 ? parseFloat(celda2.innerText.replace(',', '.')) : NaN;
+        if (!isNaN(val2)) { sumaCol = sumaCol + val2; }
+      }
+      document.getElementById('totalcol-' + c).innerHTML = sumaCol;
+    }
+    document.getElementById('totalgeneral').innerHTML = totalGeneral;
+    guardarHoja();
+  }
+
+  function guardarHoja() {
+    try {
+      var datos = [];
+      var r, c;
+      for (r = 0; r < ROWS; r = r + 1) {
+        var fila = [];
+        for (c = 0; c < COLS; c = c + 1) {
+          var celda = document.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+          fila.push(celda ? celda.innerText : '');
+        }
+        datos.push(fila);
+      }
+      localStorage.setItem('oficina_hoja', JSON.stringify(datos));
+      document.getElementById('estado-hoja').innerHTML = 'Guardado';
+    } catch (e) {
+      document.getElementById('estado-hoja').innerHTML = 'No se pudo guardar';
+    }
+  }
+
+  function cargarHoja() {
+    try {
+      var val = localStorage.getItem('oficina_hoja');
+      if (!val) { actualizarTodo(); return; }
+      var datos = JSON.parse(val);
+      var r, c;
+      for (r = 0; r < datos.length && r < ROWS; r = r + 1) {
+        for (c = 0; c < datos[r].length && c < COLS; c = c + 1) {
+          var celda = document.querySelector('td[data-r="' + r + '"][data-c="' + c + '"]');
+          if (celda) { celda.innerText = datos[r][c]; }
+        }
+      }
+      actualizarTodo();
+    } catch (e) { actualizarTodo(); }
+  }
+
+  function borrarHoja() {
+    if (confirm('Esto borra toda la hoja. Continuar?')) {
+      localStorage.removeItem('oficina_hoja');
+      construirTabla();
+      actualizarTodo();
+    }
+  }
+
+  cargarDocs();
+  construirTabla();
+  cargarHoja();
+</script>
+
+</body>
+</html>
